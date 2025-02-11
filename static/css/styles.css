@@ -13,15 +13,20 @@ body {
     font-size: 20px;
     display: flex;
     align-items: center;
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
 .navbar i {
     margin-right: 10px;
 }
 
 .container {
     max-width: 800px;
-    margin: 40px auto;
+    margin: 80px auto;
     padding: 20px;
     background: white;
     border-radius: 10px;

@@ -7,28 +7,36 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
     <script>
         function fetchLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(position => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    
                     fetch('/get_location', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
+                            latitude: latitude,
+                            longitude: longitude
                         })
                     })
                     .then(response => response.json())
                     .then(data => {
                         document.getElementById("city").innerText = data.city;
                         document.getElementById("wiki").innerText = data.wiki.extract;
+
                         const wikiLink = data.wiki.url;
                         if (wikiLink) {
                             document.getElementById("wiki-url").innerHTML = `<i><small>Read more on <a href="${wikiLink}" target="_blank">Wikipedia</a></small></i>`;
                         } else {
                             document.getElementById("wiki-url").innerHTML = "";
                         }
+
+                        showMap(data.map_url);
                     })
                     .catch(error => console.error("Error fetching location:", error));
                 }, error => {
@@ -37,6 +45,15 @@
             } else {
                 alert("Geolocation is not supported by your browser.");
             }
+        }
+
+        function showMap(mapFile) {
+            const iframe = document.createElement('iframe');
+            iframe.src = mapFile;
+            iframe.width = "100%";
+            iframe.height = "400px";
+            iframe.style.border = "none";
+            document.getElementById("map-container").appendChild(iframe);
         }
     </script>
 </head>
@@ -48,6 +65,7 @@
         <h1 id="city"></h1>
         <p id="wiki">Fetching data..</p>
         <p id="wiki-url"></p>
+        <div id="map-container" style="margin-top: 20px;"></div>
     </div>
 </body>
 </html>
