@@ -1,0 +1,38 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+.navbar {
+    background-color: #0078D7;
+    color: white;
+    padding: 15px 20px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.navbar i {
+    margin-right: 10px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    color: #0078D7;
+}
+
+p {
+    font-size: 18px;
+    margin: 10px 0;
+}
