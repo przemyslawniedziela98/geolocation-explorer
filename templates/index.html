@@ -31,10 +31,14 @@
 
                         const wikiLink = data.wiki.url;
                         if (wikiLink) {
-                            document.getElementById("wiki-url").innerHTML = `<i><small>Read more on <a href="${wikiLink}" target="_blank">Wikipedia</a></small></i>`;
+                            document.getElementById("wiki-url").innerHTML = `<i><small>Przeczytaj więcej na <a href="${wikiLink}" target="_blank">Wikipedii</a></small></i>`;
                         } else {
                             document.getElementById("wiki-url").innerHTML = "";
                         }
+                        
+                        document.getElementById("fun-facts").innerHTML = `<h2>Ciekawe fakty</h2>${data.fun_facts}`;
+                        document.getElementById("famous-people").innerHTML = `<h2>Sławni ludzie</h2>${data.famous_people}`;
+                        document.getElementById("nearby-attractions").innerHTML = `<h2>Co warto zobaczyć w pobliżu</h2>${data.nearby_attractions}`;
 
                         showMap(data.map_url);
                     })
@@ -66,6 +70,10 @@
         <p id="wiki">Fetching data..</p>
         <p id="wiki-url"></p>
         <div id="map-container" style="margin-top: 20px;"></div>
+
+        <ul id="fun-facts"></ul>
+        <ul id="famous-people"></ul>
+        <ul id="nearby-attractions"></ul>
     </div>
 </body>
 </html>

@@ -1,15 +1,23 @@
 import os
 import requests
 import logging
+from typing import Dict, Any, List
 from flask import Blueprint, request, jsonify
 import folium
+import openai
+from dotenv import load_dotenv
 
 
+load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 location_bp = Blueprint('location', __name__)
 
 GEOCODE_URL = "https://nominatim.openstreetmap.org/reverse.php"
 WIKI_URL = "https://pl.wikipedia.org/api/rest_v1/page/summary/{}"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("Missing OPENAI_API_KEY. Please set it in the .env file.")
+
 
 def get_city_name(lat: float, lon: float) -> str:
     """
@@ -72,6 +80,42 @@ def create_map(lat: float, lon: float) -> str:
     map_.save(map_file_path)
     return f"/static/maps/{os.path.basename(map_file_path)}"
 
+def get_gpt_info(city: str) -> Dict[str, List[str]]:
+    """
+    Fetch fun facts, famous people, and nearby attractions using GPT API.
+    
+    Args:
+        city (str): The name of the city to fetch information for.
+
+    Returns: 
+        dict: results of the GPT prompt with 'fun_facts', 'famous_people', 'nearby_attractions'.
+    """
+    prompt = (
+        f"Provide fun facts (in short, informative points), famous people (with a short description), "
+        f"and nearby attractions for {city}. Provide everything in Polish! "
+        f"Format as JSON (provide just JSON as raw text) with keys: 'fun_facts', 'famous_people', 'nearby_attractions';"
+        f"values should be in HTML format"
+    )
+    
+    try:
+        logging.info(f"Fetching GPT information for city: {city}")
+        
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "system", "content": "You are a knowledgeable travel assistant."},
+                      {"role": "user", "content": prompt}],
+            api_key=OPENAI_API_KEY
+        )
+        
+        logging.info(f"Successfully fetched GPT information for city: {city}")
+        
+        gpt_data = response.choices[0].message.content
+        return eval(gpt_data.replace("json", "").replace("```", ""))  
+    
+    except Exception as e:
+        logging.error(f"Failed to fetch GPT information for city: {city}. Error: {str(e)}")
+        return {"fun_facts": [], "famous_people": [], "nearby_attractions": []}
+
 
 @location_bp.route('/get_location', methods=['POST'])
 def get_location():
@@ -90,10 +134,15 @@ def get_location():
     city = get_city_name(lat, lon)
     wiki_info = get_wikipedia_summary(city)
     map_file = create_map(lat, lon)
+    gpt_info = get_gpt_info(city)
     
     logging.info(f"User located in: {city}")
     return jsonify({
         "city": city,
         "wiki": wiki_info,
-        "map_url": map_file 
+        "map_url": map_file, 
+        "fun_facts": gpt_info.get("fun_facts", []),
+        "famous_people": gpt_info.get("famous_people", []),
+        "nearby_attractions": gpt_info.get("nearby_attractions", []),
+
     })
